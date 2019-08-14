@@ -3,7 +3,6 @@ stages:
   - teste
   - beta
   - www
-  - ntn
 
 services:
   - docker:dind
