@@ -2,6 +2,7 @@ stages:
   - build
   - teste
   - beta
+  - www
 
 services:
   - docker:dind
