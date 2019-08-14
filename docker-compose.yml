@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+
+### Volumes #############################
+
+  applications:
+    image: tianon/true
+    volumes:
+      - ./:/var/www
+
+### Android SDK ###########################
+
+  android-sdk:
+    build: .
+    volumes_from:
+      - applications:rw

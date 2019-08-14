@@ -1,0 +1,44 @@
+stages:
+  - build
+  - teste
+  - beta
+
+services:
+  - docker:dind
+
+build: &build
+  image: tmaier/docker-compose:latest
+  stage: build
+  when: manual
+  script:
+    - docker-compose up -d
+  artifacts:
+    name: ${CI_PROJECT_NAME}-${CI_PIPELINE_ID}
+    expire_in: 1 week
+    paths:
+      - ./cpos-android.apk
+      - ./build.info
+
+############## Turismo
+Turismo Interno:
+  <<: *build
+  stage: teste
+  before_script:
+    - sed -i '148,165{s/^/# /}' Dockerfile
+    - sed -i '166{s/^/\.\/gradlew publishApkProductionRelease /}' Dockerfile
+
+Turismo Beta:
+  <<: *build
+  stage: beta
+  before_script:
+    - sed -i '243{s/internal/beta/}' app/build.gradle
+    - sed -i '148,165{s/^/# /}' Dockerfile
+    - sed -i '166{s/^/\.\/gradlew publishApkProductionRelease /}' Dockerfile
+after_script:
+  - echo -e "
+    $(date +'%d/%m/%Y %T') UTC \n
+    Project ${CI_PROJECT_NAME} \n
+    User ${GITLAB_USER_EMAIL} \n
+    Branch ${CI_COMMIT_REF_NAME} \n
+    Last commit ${CI_COMMIT_SHA}" >> ./build.info
+  - docker cp $(docker ps -a |grep android-cpos_android-sdk_1 |awk '{print $NF}'):/cpos-android.apk ./|- 
